@@ -1,26 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Mi Colmena</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
-<h1>Mi Colmena</h1>
+<h1>🐝 Mi Colmena</h1>
+<p>Inventario offline (IndexedDB)</p>
+
+<button onclick="initDB()">Inicializar Base</button>
+
+<hr>
 
 <h2>Inventario</h2>
 
-<input id="nombre" placeholder="Producto">
-<input id="precio" type="number" placeholder="Precio">
-<input id="stock" type="number" placeholder="Stock">
+<input id="nombre" placeholder="Producto"><br><br>
+<input id="precio" type="number" placeholder="Precio"><br><br>
+<input id="stock" type="number" placeholder="Stock"><br><br>
 
-<br><br>
+<button onclick="guardarProducto()">Guardar producto</button>
 
-<button onclick="agregar()">Agregar producto</button>
+<hr>
 
+<h3>Productos</h3>
 <ul id="lista"></ul>
 
-<script src="js/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
 
