@@ -1,4 +1,12 @@
-      let db;
+let rubroActivo = "almacen";
+function cambiarRubro() {
+  rubroActivo = document.getElementById("rubro").value;
+  document.body.className = rubroActivo;
+  listarProductos();
+  listarVentas();
+}
+
+let db;
 
 function initDB() {
   const request = indexedDB.open("mi_colmena_db", 1);
@@ -24,6 +32,7 @@ function initDB() {
 
   request.onerror = () => alert("Error al crear la base");
 }
+document.body.className = rubroActivo;
 
 // -------- INVENTARIO --------
 
@@ -36,8 +45,8 @@ const nombre = document.getElementById("nombre").value;
   const tx = db.transaction("productos", "readwrite");
   const store = tx.objectStore("productos");
       
-store.add({ codigo, nombre, precio, stock });
-
+store.add({ codigo, nombre, precio, stock, rubro: rubroActivo });
+      
   tx.oncomplete = () => {
     listarProductos();
     document.getElementById("nombre").value = "";
@@ -60,6 +69,11 @@ function listarProductos() {
     const cursor = e.target.result;
     if (cursor) {
       const p = cursor.value;
+if (p.rubro !== rubroActivo) {
+  cursor.continue();
+  return;
+}
+          
 
       const li = document.createElement("li");
       li.textContent = `${p.nombre} — $${p.precio} — stock: ${p.stock}`;
@@ -96,14 +110,15 @@ function registrarVenta() {
 
     producto.stock -= cantidad;
     productos.put(producto);
-
-    ventas.add({
-      producto: producto.nombre,
-      cantidad,
-      total: producto.precio * cantidad,
-      pago,
-      fecha: new Date().toLocaleString()
-    });
+ventas.add({
+  producto: producto.nombre,
+  cantidad,
+  total: producto.precio * cantidad,
+  pago,
+  fecha: new Date().toLocaleString(),
+  rubro: rubroActivo
+});
+      
   };
 
   tx.oncomplete = () => {
@@ -123,7 +138,12 @@ function listarVentas() {
     const cursor = e.target.result;
     if (cursor) {
       const v = cursor.value;
-
+const v = cursor.value;
+if (v.rubro !== rubroActivo) {
+  cursor.continue();
+  return;
+}
+          
       const li = document.createElement("li");
       li.textContent =
         `${v.fecha} — ${v.producto} x${v.cantidad} — $${v.total} — ${v.pago}`;
