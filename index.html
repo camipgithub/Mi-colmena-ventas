@@ -1,41 +1,17 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Mi Colmena</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/base.css">
 </head>
 <body>
-  <h1>🐝 Mi Colmena</h1>
-  <p>POS offline listo (IndexedDB)</p>
-  <button onclick="this.innerText='✔ Botón funciona'">
-      Inicializar Base
-      </button>
-<h2>Inventario</h2>
 
-<input id="nombre" placeholder="Producto" />
-<input id="precio" type="number" placeholder="Precio" />
-<input id="stock" type="number" placeholder="Stock" />
+<h1>Mi Colmena</h1>
 
-<button onclick="guardarProducto()">Guardar producto</button>
-<button onclick="listarProductos()">Ver productos</button>
-  
-<ul id="lista"></ul>
-  
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
-    }
-  </script><!--
-  <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js');
-          }
-          </script>
-          -->
-   <script src="js/db.js"></script>
-  
+<button onclick="prueba()">Probar JS</button>
+
+<script src="js/db.js"></script>
+
 </body>
 </html>
+
