@@ -1,3 +1,5 @@
+alert("db.js ejecutándose");
+
 console.log("db.js cargado correctamente");
 document.body.innerHTML += "<p>📦 db.js cargado</p>";
 
