@@ -110,21 +110,43 @@ function registrarVenta() {
 
     producto.stock -= cantidad;
     productos.put(producto);
-ventas.add({
+const venta = {
   producto: producto.nombre,
   cantidad,
   total: producto.precio * cantidad,
   pago,
   fecha: new Date().toLocaleString(),
   rubro: rubroActivo
-});
+};
       
   };
+  ventas.add(venta).onsuccess = e => {
+  mostrarTicket(venta);
+};
+  
 
   tx.oncomplete = () => {
     listarProductos();
     listarVentas();
   };
+}
+function mostrarTicket(v) {
+  const html = `
+    <h2>Mi Colmena</h2>
+    <p>${v.fecha}</p>
+    <hr>
+    <p>Producto: ${v.producto}</p>
+    <p>Cantidad: ${v.cantidad}</p>
+    <p>Total: $${v.total}</p>
+    <p>Pago: ${v.pago}</p>
+    <hr>
+    <p>Gracias por su compra</p>
+  `;
+
+  const w = window.open("", "_blank");
+  w.document.write(html);
+  w.document.close();
+  w.print();
 }
 
 function listarVentas() {
@@ -359,3 +381,86 @@ function imprimirPDF(html) {
   w.print();
                         }
   
+function mostrarGraficoMes() {
+  const ahora = new Date();
+  let porPago = { Efectivo: 0, QR: 0, Tarjeta: 0 };
+
+  const tx = db.transaction("ventas", "readonly");
+  const store = tx.objectStore("ventas");
+
+  store.openCursor().onsuccess = e => {
+    const cursor = e.target.result;
+    if (!cursor) {
+      dibujarGrafico(porPago);
+      return;
+    }
+
+    const v = cursor.value;
+    if (v.rubro !== rubroActivo) {
+      cursor.continue();
+      return;
+    }
+
+    const f = new Date(v.fecha);
+    const esMes =
+      f.getMonth() === ahora.getMonth() &&
+      f.getFullYear() === ahora.getFullYear();
+
+    if (esMes) {
+      porPago[v.pago] += v.total;
+    }
+
+    cursor.continue();
+  };
+}
+
+function dibujarGrafico(data) {
+  const ctx = document.getElementById("graficoVentas").getContext("2d");
+
+  if (window.grafico) window.grafico.destroy();
+
+  window.grafico = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Efectivo", "QR", "Tarjeta"],
+      datasets: [{
+        data: [data.Efectivo, data.QR, data.Tarjeta]
+      }]
+    }
+  });
+}
+function backupAutomatico() {
+  let datos = { productos: [], ventas: [] };
+
+  const tx = db.transaction(["productos", "ventas"], "readonly");
+  const productos = tx.objectStore("productos");
+  const ventas = tx.objectStore("ventas");
+
+  productos.openCursor().onsuccess = e => {
+    const c = e.target.result;
+    if (c) {
+      datos.productos.push(c.value);
+      c.continue();
+    }
+  };
+
+  ventas.openCursor().onsuccess = e => {
+    const c = e.target.result;
+    if (c) {
+      datos.ventas.push(c.value);
+      c.continue();
+    }
+  };
+
+  tx.oncomplete = () => {
+    const blob = new Blob([JSON.stringify(datos)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `backup_mi_colmena_${new Date().toISOString()}.json`;
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+      }
