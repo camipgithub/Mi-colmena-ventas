@@ -71,6 +71,10 @@ function listarProductos(){
     };
   };
 }
+window.onload = () => {
+  listarProductos();
+};
+
 
 
 
