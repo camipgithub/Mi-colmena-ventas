@@ -1,10 +1,11 @@
 alert("db.js ejecutándose");
+console.log("db.js cargado");
 
-console.log("db.js cargado correctamente");
-document.body.innerHTML += "<p>📦 db.js cargado</p>";
+const DB_NAME = 'mi_colmena_db';
+const DB_VERSION = 1;
 
-function initDB(){
-  const request = indexedDB.open('mi_colmena_db', 1);
+window.initDB = function () {
+  const request = indexedDB.open(DB_NAME, DB_VERSION);
 
   request.onupgradeneeded = (e) => {
     const db = e.target.result;
@@ -15,69 +16,56 @@ function initDB(){
         autoIncrement: true
       });
     }
-
-    if (!db.objectStoreNames.contains('ventas')) {
-      db.createObjectStore('ventas', {
-        keyPath: 'id',
-        autoIncrement: true
-      });
-    }
   };
 
   request.onsuccess = () => {
-    document.body.innerHTML += "<p>✅ Base creada correctamente</p>";
+    console.log("Base lista");
   };
 
   request.onerror = () => {
-    document.body.innerHTML += "<p>❌ Error al crear la base</p>";
+    console.error("Error al abrir la base");
   };
-}
-function guardarProducto(){
+};
+
+window.guardarProducto = function () {
   const nombre = document.getElementById('nombre').value;
   const precio = Number(document.getElementById('precio').value);
   const stock = Number(document.getElementById('stock').value);
 
-  const request = indexedDB.open('mi_colmena_db',1);
+  const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-  request.onsuccess = e => {
+  request.onsuccess = (e) => {
     const db = e.target.result;
-    const tx = db.transaction('productos','readwrite');
+    const tx = db.transaction('productos', 'readwrite');
     const store = tx.objectStore('productos');
 
     store.add({ nombre, precio, stock });
 
     tx.oncomplete = () => {
-      listarProductos();
+      window.listarProductos();
     };
   };
-}
+};
 
-function listarProductos(){
-  const request = indexedDB.open('mi_colmena_db',1);
+window.listarProductos = function () {
+  const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-  request.onsuccess = e => {
+  request.onsuccess = (e) => {
     const db = e.target.result;
-    const tx = db.transaction('productos','readonly');
+    const tx = db.transaction('productos', 'readonly');
     const store = tx.objectStore('productos');
 
     const lista = document.getElementById('lista');
     lista.innerHTML = '';
 
-    store.openCursor().onsuccess = e => {
+    store.openCursor().onsuccess = (e) => {
       const cursor = e.target.result;
-      if(cursor){
+      if (cursor) {
         const p = cursor.value;
         lista.innerHTML += `<li>${p.nombre} — $${p.precio} — stock: ${p.stock}</li>`;
         cursor.continue();
       }
     };
   };
-}
-window.onload = () => {
-  listarProductos();
 };
 
-
-
-
-                
