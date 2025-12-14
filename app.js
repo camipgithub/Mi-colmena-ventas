@@ -41,12 +41,22 @@ function guardarProducto() {
 const nombre = document.getElementById("nombre").value;
   const precio = Number(document.getElementById("precio").value);
   const stock = Number(document.getElementById("stock").value);
-
+const costo = Number(document.getElementById("costo").value);
+const oferta = Number(document.getElementById("oferta").value || 0);
+  
   const tx = db.transaction("productos", "readwrite");
   const store = tx.objectStore("productos");
       
-store.add({ codigo, nombre, precio, stock, rubro: rubroActivo });
-      
+     store.add({
+  codigo,
+  nombre,
+  costo,
+  precio,
+  oferta,
+  stock,
+  rubro: rubroActivo
+});
+  
   tx.oncomplete = () => {
     listarProductos();
     document.getElementById("nombre").value = "";
@@ -107,7 +117,19 @@ function registrarVenta() {
       alert("Stock insuficiente");
       return;
     }
+const precioVenta = producto.oferta > 0 ? producto.oferta : producto.precio;
 
+ventas.add({
+  producto: producto.nombre,
+  cantidad,
+  total: precioVenta * cantidad,
+  costo: producto.costo * cantidad,
+  ganancia: (precioVenta - producto.costo) * cantidad,
+  pago,
+  fecha: new Date().toLocaleString(),
+  rubro: rubroActivo
+});
+    
     producto.stock -= cantidad;
     productos.put(producto);
 const venta = {
@@ -206,10 +228,12 @@ function generarReporte(tipo) {
   const ahora = new Date();
   let total = 0;
   let porPago = { Efectivo: 0, QR: 0, Tarjeta: 0 };
-
+let ganancia = 0;
+  
   const tx = db.transaction("ventas", "readonly");
   const store = tx.objectStore("ventas");
-
+ganancia += v.ganancia;
+  
   store.openCursor().onsuccess = e => {
     const cursor = e.target.result;
     if (!cursor) {
@@ -249,12 +273,15 @@ function mostrarReporte(total, porPago, tipo) {
   document.getElementById("reporte").innerHTML = `
     <h3>Reporte ${tipo === "hoy" ? "de Hoy" : "del Mes"}</h3>
     <p><b>Total:</b> $${total}</p>
+    <p><b>Ganancia:</b> $${ganancia}</p>
+    
     <ul>
       <li>Efectivo: $${porPago.Efectivo}</li>
       <li>QR: $${porPago.QR}</li>
       <li>Tarjeta: $${porPago.Tarjeta}</li>
     </ul>
   `;
+    
 }
 
   function exportarCSV(tipo) {
@@ -464,3 +491,40 @@ function backupAutomatico() {
     URL.revokeObjectURL(url);
   };
       }
+function mostrarCatalogo() {
+  if (rubroActivo !== "cosmetica") {
+    document.getElementById("catalogo").innerHTML =
+      "<p>Disponible solo en Cosmética</p>";
+    return;
+  }
+
+  let html = "";
+  const tx = db.transaction("productos", "readonly");
+  const store = tx.objectStore("productos");
+
+  store.openCursor().onsuccess = e => {
+    const cursor = e.target.result;
+    if (!cursor) {
+      document.getElementById("catalogo").innerHTML = html;
+      return;
+    }
+
+    const p = cursor.value;
+    if (p.rubro === "cosmetica") {
+      html += `
+        <div style="border:1px solid #ccc; margin:5px; padding:5px">
+          <b>${p.nombre}</b><br>
+          ${
+            p.oferta > 0
+              ? `<span style="color:gray;text-decoration:line-through">$${p.precio}</span>
+                 <span style="color:magenta;font-size:18px">$${p.oferta}</span>`
+              : `<span>$${p.precio}</span>`
+          }
+        </div>
+      `;
+    }
+
+    cursor.continue();
+  };
+}
+    
