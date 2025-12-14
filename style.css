@@ -9,4 +9,11 @@ input, select, button {
   width: 100%;
   max-width: 300px;
 }
+body.almacen {
+  background-color: #fff8dc;
+}
+
+body.cosmetica {
+  background-color: #ffe4f0;
+}
 
