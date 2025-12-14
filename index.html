@@ -8,10 +8,19 @@
 
 <h1>Mi Colmena</h1>
 
-<button onclick="prueba()">Probar JS</button>
+<h2>Inventario</h2>
 
-<script src="js/db.js"></script>
+<input id="nombre" placeholder="Producto">
+<input id="precio" type="number" placeholder="Precio">
+<input id="stock" type="number" placeholder="Stock">
 
+<br><br>
+
+<button onclick="agregar()">Agregar producto</button>
+
+<ul id="lista"></ul>
+
+<script src="js/app.js"></script>
 </body>
 </html>
 
